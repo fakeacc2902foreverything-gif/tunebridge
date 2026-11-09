@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101014">
+<title>TuneBridge - Free Playlist Transfer</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101014;color:#fff;
+ font-family:Arial,sans-serif;padding:22px 16px;
+}
+.container{max-width:650px;margin:auto}
+.logo{font-size:29px;font-weight:800;margin-top:25px}
+.logo span{color:#25d879}
+.tagline{color:#aaa;margin:9px 0 25px}
+.card{
+ background:#1b1b23;border:1px solid #30303b;
+ border-radius:17px;padding:19px;margin:17px 0;
+}
+h2{font-size:19px;margin:0 0 15px}
+label{display:block;color:#ccc;font-size:14px;margin-bottom:9px}
+input,textarea{
+ width:100%;background:#101014;color:white;
+ border:1px solid #42424e;border-radius:10px;
+ padding:14px;font-size:15px;outline:none;
+ margin-bottom:15px;
+}
+textarea{height:180px;resize:vertical;line-height:1.6}
+input:focus,textarea:focus{border-color:#25d879}
+button{
+ border:0;border-radius:10px;padding:14px;
+ font-size:15px;font-weight:bold;cursor:pointer;
+}
+.primary{background:#25d879;color:#07160d;width:100%}
+.secondary{background:#30303b;color:white}
+button:active{opacity:.75}
+.note{font-size:13px;color:#aaa;line-height:1.6}
+.song{
+ background:#252530;border-radius:11px;
+ padding:13px;margin:10px 0;
+ display:flex;justify-content:space-between;
+ align-items:center;gap:10px;
+}
+.song-info{min-width:0;overflow-wrap:anywhere}
+.song-title{font-weight:bold;font-size:14px}
+.song-artist{color:#aaa;font-size:12px;margin-top:5px}
+.song a{
+ background:#25d879;color:#07160d;
+ padding:10px;border-radius:8px;
+ text-decoration:none;font-size:12px;
+ font-weight:bold;white-space:nowrap;
+}
+.hidden{display:none}
+#status{color:#25d879;font-size:14px;margin-top:12px}
+.footer{text-align:center;color:#777;font-size:12px;margin:30px 0}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="logo">🎵 Tune<span>Bridge</span></div>
+<p class="tagline">Your playlists. Your music. One bridge.</p>
+
+<div class="card">
+<h2>🎧 Create your transfer</h2>
+
+<label>Playlist name</label>
+<input id="playlist" placeholder="My favourite songs">
+
+<label>Paste your songs below</label>
+<textarea id="songs" placeholder="Paste one song per line.
+
+Example:
+The Weeknd - Blinding Lights
+Ed Sheeran - Perfect
+Taylor Swift - Cruel Summer"></textarea>
+
+<p class="note">
+Tip: Use the format Artist - Song Title.
+One song per line works best.
+</p>
+
+<button class="primary" onclick="generate()">
+Find my songs →
+</button>
+<div id="status"></div>
+</div>
+
+<div class="card hidden" id="results">
+<h2>🎼 Your song matches</h2>
+<p class="note" id="count"></p>
+<div id="list"></div>
+
+<button class="secondary" style="width:100%;margin-top:12px"
+onclick="copyList()">
+Copy all song searches
+</button>
+</div>
+
+<div class="card">
+<h2>ℹ️ How it works</h2>
+<p class="note">
+1. Copy your Spotify song list.<br><br>
+2. Paste it into TuneBridge.<br><br>
+3. Tap Find my songs.<br><br>
+4. Open each YouTube Music search.<br><br>
+5. Find the correct version and add it to your playlist.
+</p>
+</div>
+
+<div class="footer">
+TuneBridge · Free playlist helper · Made with ❤️
+</div>
+</div>
+
+<script>
+let searches=[];
+
+function generate(){
+ const raw=document.getElementById("songs").value;
+ const lines=raw.split(/\n/).map(x=>x.trim()).filter(Boolean);
+
+ if(!lines.length){
+  document.getElementById("status").textContent=
+  "Please paste some songs first.";
+  return;
+ }
+
+ searches=lines.map(line=>{
+  let clean=line.replace(/^\d+[\.\)]\s*/,"").trim();
+  return clean;
+ });
+
+ const list=document.getElementById("list");
+ list.innerHTML="";
+
+ searches.forEach((song,i)=>{
+  const url="https://music.youtube.com/search?q="+
+  encodeURIComponent(song);
+
+  const row=document.createElement("div");
+  row.className="song";
+
+  const info=document.createElement("div");
+  info.className="song-info";
+
+  const title=document.createElement("div");
+  title.className="song-title";
+  title.textContent=(i+1)+". "+song;
+
+  const artist=document.createElement("div");
+  artist.className="song-artist";
+  artist.textContent="Ready to search";
+
+  info.appendChild(title);
+  info.appendChild(artist);
+
+  const link=document.createElement("a");
+  link.href=url;
+  link.target="_blank";
+  link.rel="noopener noreferrer";
+  link.textContent="Find song ↗";
+
+  row.appendChild(info);
+  row.appendChild(link);
+  list.appendChild(row);
+ });
+
+ document.getElementById("results").classList.remove("hidden");
+ document.getElementById("count").textContent=
+ searches.length+" songs ready to search.";
+
+ document.getElementById("status").textContent=
+ "Success! Your song searches are ready.";
+
+ document.getElementById("results").scrollIntoView({
+  behavior:"smooth"
+ });
+}
+
+async function copyList(){
+ const text=searches.join("\n");
+ try{
+  await navigator.clipboard.writeText(text);
+  alert("Song searches copied!");
+ }catch(e){
+  alert("Copy isn't available in this browser. You can copy the songs from the text box.");
+ }
+}
+</script>
+</body>
+</html>
